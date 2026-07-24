@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="da"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>King of Tortuga - Build 2</title>
+<style>
+body{margin:0;background:#17324a;color:#fff;font-family:system-ui;display:flex;justify-content:center}
+#game{max-width:430px;width:100%;margin:16px;background:#5b3b1e;border-radius:16px;overflow:hidden}
+header{background:#3d2511;padding:16px;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;background:#6b4724}
+.card{background:#7d552d;padding:8px;border-radius:8px;text-align:center}
+#portrait{font-size:84px;text-align:center;padding:16px;background:#d8c79d;color:#000}
+#content{background:#efe2bf;color:#000;padding:18px;min-height:180px}
+#name{font-size:26px;font-weight:bold;margin-bottom:10px}
+.buttons{display:flex;gap:10px;padding:14px;background:#3d2511}
+button{flex:1;padding:15px;font-size:20px;border:none;border-radius:10px;color:white}
+#yes{background:#2e9d58}#no{background:#bf3d34}
+</style></head><body>
+<div id="game">
+<header><h1>🏴 King of Tortuga</h1><div id="day"></div></header>
+<div class="grid">
+<div class="card">💰<br><span id="gold"></span></div>
+<div class="card">👥<br><span id="crew"></span></div>
+<div class="card">😊<br><span id="morale"></span></div>
+<div class="card">☠️<br><span id="fear"></span></div>
+<div class="card">🚢<br><span id="ship"></span></div>
+<div class="card">🍖<br><span id="food"></span></div>
+</div>
+<div id="portrait">🏴‍☠️</div>
+<div id="content"><div id="name"></div><div id="dialog"></div></div>
+<div class="buttons"><button id="yes">JA</button><button id="no">NEJ</button></div>
+</div>
+<script>
+let game={day:1,gold:300,crew:40,morale:60,fear:40,ship:100,food:80,reputation:0};
+const events=[{name:"Styrmand Briggs",text:"Et spansk handelsskib sejler alene. Angribe?",yes:{'gold': 120, 'crew': -2, 'fear': 5},no:{'morale': 2}},
+{name:"Kokken Maria",text:"Købe rom til besætningen?",yes:{'gold': -40, 'morale': 8, 'food': 10},no:{'morale': -6}},
+{name:"Kvartérmester Flint",text:"Reparere skibet for 100 guld?",yes:{'gold': -100, 'ship': 20},no:{'ship': -15}},
+{name:"Præsten Gabriel",text:"Skåne de overlevende?",yes:{'morale': 8, 'fear': -5},no:{'fear': 5}},
+{name:"Kahytsdrengen",text:"Må jeg blive en del af besætningen?",yes:{'crew': 1, 'morale': 2},no:{}},
+{name:"Smugleren",text:"Købe et mystisk skattekort?",yes:{'gold': -60, 'reputation': 4},no:{'gold': 10}},
+{name:"Spejderen",text:"Der er storm på vej. Søg havn?",yes:{'ship': 5},no:{'ship': -10, 'gold': 20}},
+{name:"Lægen",text:"Køb medicin til besætningen?",yes:{'gold': -30, 'morale': 6},no:{'crew': -1}},
+{name:"Handelsmand",text:"Sælg forsyninger til en koloni?",yes:{'gold': 70, 'food': -10},no:{'reputation': -2}},
+{name:"Vagten",text:"Hænge en tyv?",yes:{'fear': 8},no:{'morale': 3}}];
+let current=0;
+function load(){let s=localStorage.getItem("kot2");if(s)game=JSON.parse(s);}
+function save(){localStorage.setItem("kot2",JSON.stringify(game));}
+function show(){
+day.textContent="Dag "+game.day;
+["gold","crew","morale","fear","ship","food"].forEach(k=>document.getElementById(k).textContent=game[k]);
+name.textContent=events[current].name;
+dialog.textContent=events[current].text;
+save();
+}
+function apply(side){
+let r=events[current][side];
+for(let k in r)game[k]=(game[k]||0)+r[k];
+game.day++;
+if(game.food>0 && game.day%5===0) game.food-=5;
+if(game.food<=0) game.morale-=5;
+if(game.ship<=0||game.crew<=0||game.morale<=0){alert("Game Over");localStorage.removeItem("kot2");location.reload();return;}
+current=Math.floor(Math.random()*events.length);
+show();
+}
+yes.onclick=()=>apply("yes");no.onclick=()=>apply("no");
+load();show();
+</script></body></html>
